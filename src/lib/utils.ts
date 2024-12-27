@@ -67,9 +67,20 @@ const calculateDimensions = (
 	};
 };
 
-export const convertToWebP = (
+export const outputFormats = ["webp", "jpeg", "png"] as const;
+
+export type OutputFormat = (typeof outputFormats)[number];
+
+export const outputFormatToLabel: Record<OutputFormat, string> = {
+	webp: "WebP",
+	jpeg: "JPEG",
+	png: "PNG",
+};
+
+export const convertImageFormat = (
 	file: File,
 	options: ConversionOptions,
+	outputFormat: "webp" | "jpeg" | "png" = "webp",
 ): Promise<{ blob: Blob; name: string }> => {
 	const { quality = 0.8, maxWidth = 1920, maxHeight = 1080 } = options;
 
@@ -104,7 +115,7 @@ export const convertToWebP = (
 					if (blob) {
 						resolve({
 							blob,
-							name: file.name.replace(/\.[^/.]+$/, ".webp"),
+							name: file.name.replace(/\.[^/.]+$/, `.${outputFormat}`),
 						});
 					} else {
 						reject(new Error("WebP conversion failed"));

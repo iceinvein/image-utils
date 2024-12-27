@@ -2,12 +2,22 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 import {
 	type ImageDimensions,
-	convertToWebP,
+	type OutputFormat,
+	convertImageFormat,
 	getImageDimensions,
+	outputFormatToLabel,
 } from "@/lib/utils";
 import { Download, Trash } from "lucide-react";
 import { useCallback, useState } from "react";
 import DragAndDropFileZone from "./components/drag-and-drop-file-zone";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "./components/ui/dropdown-menu";
 
 type FileWithDimensions = {
 	file: File;
@@ -24,6 +34,9 @@ function App() {
 	>([]);
 	const [isDragging, setIsDragging] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [outputFormat, setOutputFormat] = useState<"webp" | "jpeg" | "png">(
+		"webp",
+	);
 
 	const onDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
 		e.preventDefault();
@@ -102,11 +115,15 @@ function App() {
 
 	const convertFiles = useCallback(() => {
 		const promises = files.map((file) =>
-			convertToWebP(file.file, {
-				quality: 0.8,
-				maxWidth: 1920,
-				maxHeight: 1080,
-			}),
+			convertImageFormat(
+				file.file,
+				{
+					quality: 0.8,
+					maxWidth: 1920,
+					maxHeight: 1080,
+				},
+				outputFormat,
+			),
 		);
 
 		Promise.all(promises)
@@ -125,7 +142,7 @@ function App() {
 			.finally(() => {
 				setFiles([]);
 			});
-	}, [files]);
+	}, [files, outputFormat]);
 
 	return (
 		<ThemeProvider defaultTheme="dark" storageKey="image-utils-theme">
@@ -145,8 +162,8 @@ function App() {
 					</div>
 				)}
 				{files.length > 0 && (
-					<div className="flex flex-col gap-2">
-						<h3 className="text-lg font-semibold mb-2">Selected Files:</h3>
+					<div className="flex flex-col gap-4">
+						<h3 className="text-lg font-semibold">Selected Files:</h3>
 						<ul>
 							{files.map(({ file, dimensions }, index) => (
 								<li
@@ -172,8 +189,28 @@ function App() {
 								</li>
 							))}
 						</ul>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="outline" size="lg">
+									Output Format: {outputFormatToLabel[outputFormat]}
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent className="w-56">
+								<DropdownMenuLabel>Output Format</DropdownMenuLabel>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem onClick={() => setOutputFormat("webp")}>
+									{outputFormatToLabel["webp" as OutputFormat]}
+								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => setOutputFormat("jpeg")}>
+									{outputFormatToLabel["jpeg" as OutputFormat]}
+								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => setOutputFormat("png")}>
+									{outputFormatToLabel["png" as OutputFormat]}
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
 						<Button onClick={convertFiles} className="w-full mt-4" size="lg">
-							Convert to WebP
+							Convert
 						</Button>
 					</div>
 				)}
