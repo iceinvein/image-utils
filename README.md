@@ -1,6 +1,6 @@
 # Image Utils
 
-A simple web app to convert images to WebP format.
+A simple web app to convert images to WebP, JPEG, or PNG format.
 
 ## Features
 
